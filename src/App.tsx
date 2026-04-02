@@ -72,6 +72,13 @@ export default function App() {
 
     try {
       const response = await fetch(`/api/track?courier=${courier}&awb=${awb}`);
+      
+      if (response.status === 429) {
+        const errData = await response.json();
+        setError(errData.error || 'Terlalu banyak permintaan. Silakan coba lagi dalam 1 menit.');
+        return;
+      }
+
       const data: TrackingData = await response.json();
 
       if (response.ok && data.status === 200) {

@@ -1,12 +1,22 @@
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
+import rateLimit from 'express-rate-limit';
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.get('/api/track', async (req, res) => {
+  // Rate limiter: Max 5 requests per minute per IP
+  const trackLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 5,
+    message: { error: 'Terlalu banyak permintaan. Silakan coba lagi dalam 1 menit.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  app.get('/api/track', trackLimiter, async (req, res) => {
     const { courier, awb } = req.query;
     const apiKey = process.env.BINDERBYTE_API_KEY;
 
